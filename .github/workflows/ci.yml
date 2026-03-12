@@ -46,6 +46,12 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      - name: Prepare data
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module
+        env:
+          PYTHONPATH: src
+        run: python src/load_data.py
+
       - name: Create artifact directory
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module
         run: mkdir -p artifacts/${{ matrix.module }}
@@ -54,7 +60,9 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module
         env:
           PYTHONPATH: src
-        run: python src/${{ matrix.module }}.py > artifacts/${{ matrix.module }}/run.log 2>&1 || true
+        run: |
+          python src/${{ matrix.module }}.py > artifacts/${{ matrix.module }}/run.log 2>&1 || true
+          if [ -d "reports/figures" ]; then cp -r reports/figures/* artifacts/${{ matrix.module }}/ 2>/dev/null || true; fi
 
       - name: Upload Artifacts
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module
