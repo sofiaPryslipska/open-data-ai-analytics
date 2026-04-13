@@ -50,7 +50,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module
         env:
           PYTHONPATH: src
-        run: python src/load_data.py
+        run: python src/main.py
 
       - name: Create artifact directory
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module

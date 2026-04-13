@@ -19,12 +19,12 @@ jobs:
       - name: Prepare data
         env:
           PYTHONPATH: src
-        run: python src/load_data.py
+        run: python src/main.py
 
       - name: Run visualization module
         env:
           PYTHONPATH: src
-        run: python src/visualize.py
+        run: python src/main.py
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
