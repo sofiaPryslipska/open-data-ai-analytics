@@ -1,20 +1,23 @@
-import requests
 import os
+import pandas as pd
+from sqlalchemy import create_engine
 
+def load_data():
+    csv_path = "/app/data/raw/payments_2024.csv"
+    db_url = "postgresql://admin:secretpassword@db:5432/analytics_db"
 
-def download_data():
-    url = "https://data.gov.ua/dataset/9ebd7456-2992-450f-bd9f-fdaf083bab20/resource/86668bef-3c1b-447a-a072-51894c6ad0b9/download/payments_on_contracts_pmg_2024.csv"
+    if not os.path.exists(csv_path):
+        print(f"Error: File not found at {csv_path}")
+        return
 
-    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    save_path = os.path.join(base_path, 'data', 'raw', 'payments_2024.csv')
+    print("Reading CSV file...")
+    df = pd.read_csv(csv_path, low_memory=False)
 
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    print("Importing data to PostgreSQL...")
+    engine = create_engine(db_url)
+    df.to_sql('raw_payments', engine, if_exists='replace', index=False)
 
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(save_path, 'wb') as f:
-            f.write(response.content)
-
+    print(f"Successfully imported {len(df)} rows.")
 
 if __name__ == "__main__":
-    download_data()
+    load_data()

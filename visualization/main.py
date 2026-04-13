@@ -1,35 +1,59 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import os
+import pandas as pd
+import matplotlib
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
+
 
 def create_visualizations():
-    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    file_path = os.path.join(base_path, 'data', 'raw', 'payments_2024.csv')
-    save_dir = os.path.join(base_path, 'reports', 'figures')
+    db_url = "postgresql://admin:secretpassword@db:5432/analytics_db"
+    save_dir = "/shared/plots"
+
+    print("Connecting to PostgreSQL...")
+    engine = create_engine(db_url)
+
+    print("Reading data...")
+    df = pd.read_sql("SELECT * FROM raw_payments", engine)
+
+    expected_cols = ['type', 'month', 'year', 'pkg_id', 'val1', 'pay_all', 'contract', 'date', 'name', 'doc', 'p_type',
+                     'kekv', 'service']
+    if len(df.columns) == len(expected_cols):
+        df.columns = expected_cols
+
+    print("Cleaning data...")
+    df['pay_all'] = pd.to_numeric(df['pay_all'], errors='coerce')
+    df = df.dropna(subset=['pay_all'])
+
     os.makedirs(save_dir, exist_ok=True)
 
-    cols = ['type', 'm', 'y', 'pkg', 'v1', 'pay', 'num', 'date', 'name', 'doc', 't', 'k', 's']
-    df = pd.read_csv(file_path, names=cols, skiprows=1, low_memory=False)
-    df['pay'] = pd.to_numeric(df['pay'], errors='coerce')
-    df = df.dropna(subset=['pay'])
+    print("Generating H1 chart...")
+    top_10_threshold = df['pay_all'].quantile(0.9)
+    shares = [df[df['pay_all'] >= top_10_threshold]['pay_all'].sum(),
+              df[df['pay_all'] < top_10_threshold]['pay_all'].sum()]
 
-    # H1: Pie chart
-    top_10_threshold = df['pay'].quantile(0.9)
-    shares = [df[df['pay'] >= top_10_threshold]['pay'].sum(), df[df['pay'] < top_10_threshold]['pay'].sum()]
     plt.figure(figsize=(8, 6))
-    plt.pie(shares, labels=['Top 10%', 'Others'], autopct='%1.1f%%', colors=['#ff9999','#66b3ff'])
+    plt.pie(shares, labels=['Top 10%', 'Others'], autopct='%1.1f%%', colors=['#ff9999', '#66b3ff'])
     plt.title('Budget Concentration (H1)')
     plt.savefig(os.path.join(save_dir, 'h1_concentration.png'))
+    plt.close()
 
-    # H3: Bar chart (активність по днях)
+    print("Generating H3 chart...")
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df_dates = df.dropna(subset=['date'])
+
     plt.figure(figsize=(12, 6))
-    df.groupby(df['date'].dt.day)['pay'].count().plot(kind='bar', color='skyblue')
+    df_dates.groupby(df_dates['date'].dt.day)['pay_all'].count().plot(kind='bar', color='skyblue')
     plt.title('Transaction Activity by Day (H3)')
     plt.xlabel('Day of Month')
     plt.ylabel('Count')
     plt.grid(axis='y', alpha=0.3)
     plt.savefig(os.path.join(save_dir, 'h3_daily_activity.png'))
+    plt.close()
+
+    print(f"Visualizations saved to {save_dir}")
+
 
 if __name__ == "__main__":
     create_visualizations()

@@ -1,31 +1,46 @@
-import pandas as pd
 import os
+import pandas as pd
+from sqlalchemy import create_engine
 
 
 def check_data_quality():
-    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    file_path = os.path.join(base_path, 'data', 'raw', 'payments_2024.csv')
+    db_url = "postgresql://admin:secretpassword@db:5432/analytics_db"
+    report_dir = "/shared"
+    report_path = os.path.join(report_dir, "quality_report.txt")
 
-    if not os.path.exists(file_path):
-        print("Error: Data file not found.")
-        return
+    print("Connecting to PostgreSQL...")
+    engine = create_engine(db_url)
 
-    df = pd.read_csv(file_path)
+    print("Reading data...")
+    df = pd.read_sql("SELECT * FROM raw_payments", engine)
 
-    print("--- General Info ---")
-    print(df.info())
+    print("Analyzing quality metrics...")
 
-    print("\n--- Missing Values ---")
-    print(df.isnull().sum())
+    report_content = [
+        "Data Quality Report",
+        "===================",
+        f"Total records: {len(df)}",
+        f"Duplicated rows: {df.duplicated().sum()}",
+        "\n--- Missing Values ---",
+        df.isnull().sum().to_string(),
+        "\n--- Data Types ---",
+        df.dtypes.to_string()
+    ]
 
-    print("\n--- Duplicated Rows ---")
-    print(f"Duplicates count: {df.duplicated().sum()}")
-
-    print("\n--- Numerical Columns Summary ---")
     if 'pay_all' in df.columns:
-        print(df['pay_all'].describe())
-        negative_payments = (df['pay_all'] < 0).sum()
-        print(f"Negative payments found: {negative_payments}")
+        df['pay_all'] = pd.to_numeric(df['pay_all'], errors='coerce')
+        report_content.extend([
+            "\n--- 'pay_all' Column Analysis ---",
+            df['pay_all'].describe().to_string(),
+            f"Negative payments count: {(df['pay_all'] < 0).sum()}"
+        ])
+
+    os.makedirs(report_dir, exist_ok=True)
+
+    with open(report_path, 'w') as f:
+        f.write('\n'.join(report_content))
+
+    print(f"Analysis complete. Report saved to {report_path}")
 
 
 if __name__ == "__main__":
