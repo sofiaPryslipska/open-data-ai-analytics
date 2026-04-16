@@ -1,0 +1,14 @@
+#cloud-config
+package_upgrade: true
+packages:
+  - git
+  - curl
+
+runcmd:
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+  - systemctl enable docker
+  - systemctl start docker
+  - git clone https://github.com/sofiaPryslipska/open-data-ai-analytics.git /home/azureuser/app
+  - cd /home/azureuser/app
+  - docker compose up -d
