@@ -12,3 +12,5 @@ runcmd:
   - git clone https://github.com/sofiaPryslipska/open-data-ai-analytics.git /home/azureuser/app
   - cd /home/azureuser/app
   - docker compose up -d
+  - cd /home/azureuser/app/monitoring
+  - docker compose -f docker-compose.monitoring.yml up -d
