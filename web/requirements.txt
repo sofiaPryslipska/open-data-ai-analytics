@@ -2,3 +2,4 @@ Flask
 pandas
 SQLAlchemy
 psycopg2-binary
+prometheus-flask-exporter

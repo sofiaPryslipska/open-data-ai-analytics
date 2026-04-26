@@ -3,9 +3,12 @@ import json
 import pandas as pd
 from flask import Flask, render_template, send_from_directory
 from sqlalchemy import create_engine
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
 
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.0')
 
 @app.route('/')
 def index():
