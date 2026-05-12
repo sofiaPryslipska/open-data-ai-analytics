@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web-container
-          image: ghcr.io/sofiapryslipska/open-data-ai-analytics-web:v1.0.0
+          image: ghcr.io/sofiapryslipska/open-data-ai-analytics-web:v1.0.1
           ports:
             - containerPort: 5000
           env:

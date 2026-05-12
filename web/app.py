@@ -12,7 +12,13 @@ metrics.info('app_info', 'Application info', version='1.0.0')
 
 @app.route('/')
 def index():
-    db_url = "postgresql://admin:secretpassword@db:5432/analytics_db"
+    db_user = os.environ.get("POSTGRES_USER", "admin")
+    db_pass = os.environ.get("POSTGRES_PASSWORD", "secretpassword")
+    db_host = os.environ.get("POSTGRES_HOST", "db")
+    db_port = os.environ.get("POSTGRES_PORT", "5432")
+    db_db = os.environ.get("POSTGRES_DB", "analytics_db")
+
+    db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_db}"
 
     try:
         engine = create_engine(db_url)
@@ -37,7 +43,6 @@ def index():
                            table=data_table,
                            quality=quality_report,
                            research=research_data)
-
 
 @app.route('/plots/<filename>')
 def serve_plot(filename):
