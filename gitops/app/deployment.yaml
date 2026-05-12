@@ -18,6 +18,18 @@ spec:
       containers:
         - name: web-container
           image: ghcr.io/sofiapryslipska/open-data-ai-analytics-web:v1.0.0
-          imagePullPolicy: Never
           ports:
             - containerPort: 5000
+          env:
+            - name: APP_ENV
+              value: "gitops"
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "secretpassword"
+            - name: POSTGRES_DB
+              value: "analytics_db"
+            - name: POSTGRES_HOST
+              value: "10.0.1.4"
+            - name: POSTGRES_PORT
+              value: "5432"
