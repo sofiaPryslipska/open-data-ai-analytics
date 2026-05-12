@@ -33,3 +33,11 @@ spec:
               value: "10.0.1.4"
             - name: POSTGRES_PORT
               value: "5432"
+          volumeMounts:
+            - name: shared-volume
+              mountPath: /shared
+      volumes:
+        - name: shared-volume
+          hostPath:
+            path: /home/azureuser/app/shared_data
+            type: DirectoryOrCreate
