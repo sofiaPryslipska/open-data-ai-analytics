@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-web-deployment
+  namespace: ai-analytics-app
+  labels:
+    app: analytics-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-web
+  template:
+    metadata:
+      labels:
+        app: analytics-web
+    spec:
+      containers:
+        - name: web-container
+          image: ghcr.io/sofiapryslipska/open-data-ai-analytics-web:latest
+          ports:
+            - containerPort: 5000
