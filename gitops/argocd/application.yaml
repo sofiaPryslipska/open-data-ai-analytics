@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/sofiaPryslipska/open-data-ai-analytics.git'
-    targetRevision: main
+    targetRevision: master
     path: gitops/app
   destination:
     server: 'https://kubernetes.default.svc'
