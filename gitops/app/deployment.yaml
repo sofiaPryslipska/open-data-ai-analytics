@@ -18,5 +18,6 @@ spec:
       containers:
         - name: web-container
           image: ghcr.io/sofiapryslipska/open-data-ai-analytics-web:v1.0.0
+          imagePullPolicy: Never
           ports:
             - containerPort: 5000
